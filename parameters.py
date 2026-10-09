@@ -11,11 +11,11 @@ X_MIN = 0.1
 X_MAX = 1.9
 Y_MIN = 0.05
 Y_MAX = 0.95
-STEP_SIZE = 0.01
-MAX_STEPS = 100
+STEP_SIZE = 0.025
+MAX_STEPS = 150
 
 # RL parameters
-TOTAL_TIMESTEPS = 100_000
+TOTAL_TIMESTEPS = 200_000
 LOG_DIR = "./data/logs/"
 MODEL_DIR = "./data/models/"
 EVAL_FREQ = 5_000
@@ -29,6 +29,6 @@ PPO_CONFIG = {
     "gamma": 0.99,
     "gae_lambda": 0.95,
     "clip_range": 0.2,
-    "ent_coef": 0.01,
+    "ent_coef": 0.05,
     "verbose": 1,
 }
