@@ -27,8 +27,8 @@ class ParametricTrussEnv(gym.Env):
         x_max = self.params.X_MAX
         y_min = self.params.Y_MIN
         y_max = self.params.Y_MAX
-        self.observation_space = spaces.Box(low=np.array([x_min, y_min], dtype=np.float32), 
-                                            high=np.array([x_max, y_max], dtype=np.float32), 
+        self.observation_space = spaces.Box(low=np.array([x_min, y_min, 0.0], dtype=np.float32), 
+                                            high=np.array([x_max, y_max, 1000.0], dtype=np.float32), 
                                             dtype=np.float32)
 
         # Train params
@@ -38,7 +38,7 @@ class ParametricTrussEnv(gym.Env):
         self.prev_compliance = None
 
     def get_observation(self):
-        return np.array(self.current_pos, dtype=np.float32)
+        return np.array([self.current_pos[0], self.current_pos[1], self.prev_compliance], dtype=np.float32)
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -92,7 +92,7 @@ class ParametricTrussEnv(gym.Env):
                         "Tip displacement": np.nan
                         }
         else:
-            reward = float(self.prev_compliance - fem_result.compliance) # Change in compliance
+            reward = float(np.log(self.prev_compliance) - np.log(fem_result.compliance)) # Change in log compliance
             self.prev_compliance = fem_result.compliance
             terminated = False
             metrics = {"Compliance": fem_result.compliance, 
