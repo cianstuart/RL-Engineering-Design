@@ -73,7 +73,8 @@ class ParametricTrussEnv(gym.Env):
                    }
         return self.get_observation(), metrics
 
-    def step(self, action: int):
+    def step(self, action):
+        action = int(action)
         # Apply step and clip
         dx,dy = self.action_mapping[action]
         new_x = np.clip(self.current_pos[0] + dx, self.observation_space.low[0], self.observation_space.high[0])
