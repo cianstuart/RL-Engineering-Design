@@ -20,7 +20,7 @@ LOG_DIR = "./data/logs/"
 MODEL_DIR = "./data/models/"
 EVAL_FREQ = 5_000
 
-PPO_CONFIG = {
+PPO_CONFIG_PARAMETRIC = {
     "policy": "MlpPolicy",
     "learning_rate": 3e-4,
     "n_steps": 2048,
@@ -30,5 +30,18 @@ PPO_CONFIG = {
     "gae_lambda": 0.95,
     "clip_range": 0.2,
     "ent_coef": 0.05,
+    "verbose": 1,
+}
+
+PPO_CONFIG_CONSTRUCTIVE = {
+    "policy": "MlpPolicy",
+    "learning_rate": 3e-4,
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "gamma": 0.99,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.01,
     "verbose": 1,
 }

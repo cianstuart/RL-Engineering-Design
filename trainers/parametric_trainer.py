@@ -23,16 +23,16 @@ def train_agent():
     model = PPO(
         env=env,
         tensorboard_log=log_path,
-        policy=p.PPO_CONFIG["policy"],
-        learning_rate=p.PPO_CONFIG["learning_rate"],
-        n_steps=p.PPO_CONFIG["n_steps"],
-        batch_size=p.PPO_CONFIG["batch_size"],
-        n_epochs=p.PPO_CONFIG["n_epochs"],
-        gamma=p.PPO_CONFIG["gamma"],
-        gae_lambda=p.PPO_CONFIG["gae_lambda"],
-        clip_range=p.PPO_CONFIG["clip_range"],
-        ent_coef=p.PPO_CONFIG["ent_coef"],
-        verbose=p.PPO_CONFIG["verbose"],
+        policy=p.PPO_CONFIG_PARAMETRIC["policy"],
+        learning_rate=p.PPO_CONFIG_PARAMETRIC["learning_rate"],
+        n_steps=p.PPO_CONFIG_PARAMETRIC["n_steps"],
+        batch_size=p.PPO_CONFIG_PARAMETRIC["batch_size"],
+        n_epochs=p.PPO_CONFIG_PARAMETRIC["n_epochs"],
+        gamma=p.PPO_CONFIG_PARAMETRIC["gamma"],
+        gae_lambda=p.PPO_CONFIG_PARAMETRIC["gae_lambda"],
+        clip_range=p.PPO_CONFIG_PARAMETRIC["clip_range"],
+        ent_coef=p.PPO_CONFIG_PARAMETRIC["ent_coef"],
+        verbose=p.PPO_CONFIG_PARAMETRIC["verbose"],
     )
 
     # Set up callback
