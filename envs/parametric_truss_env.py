@@ -85,7 +85,7 @@ class ParametricTrussEnv(gym.Env):
         fem_result = self.truss.solve(new_x, new_y)
 
         if np.isnan(fem_result.compliance) or np.isinf(fem_result.compliance):
-            reward = -100.0  
+            reward = -5.0  
             terminated = True
             metrics = {"Compliance": np.nan, 
                         "Max stress": np.nan, 
