@@ -69,6 +69,7 @@ class ConstructiveTrussEnv(gym.Env):
         terminated = False
         truncated = False
         metrics = {}
+        min_seperation = 0.15 #seperation between the agent nodes
 
         if self.current_step == 0:
             self.pos1 = self.scale_action(action)
@@ -78,7 +79,6 @@ class ConstructiveTrussEnv(gym.Env):
             bar_index = self.current_step - 2
             if action[0] > 0:
                 self.bar_decisions[bar_index] = 1.0
-                reward -= 0.1
             else:
                 self.bar_decisions[bar_index] = 0.0
 
@@ -94,10 +94,17 @@ class ConstructiveTrussEnv(gym.Env):
                 compliance = np.nan
 
             if  not np.isfinite(compliance) or compliance <= 0:
-                reward += -15.0
+                reward += -10.0
+            elif np.linalg.norm(self.pos1 - self.pos2) < min_seperation:
+                reward += -10.0   
             else:
-                compliance_ref = 40.0
-                reward += -np.log(compliance / compliance_ref)                   
+                # add a penalty for volume
+                nodes = self.truss.get_nodes(self.pos1, self.pos2)
+                conA, conB = active_connections[:,0], active_connections[:,1] # array of start and end points of active connetions
+                volume = self.params.A * np.sum(np.linalg.norm(nodes[conA] - nodes[conB], axis=1))
+                          
+                comvol_ref = 0.03
+                reward += -np.log(compliance * volume / comvol_ref)                   
                 metrics["compliance"] = float(compliance)
 
         return self.get_observation(), reward, terminated, truncated, metrics
