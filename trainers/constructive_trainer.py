@@ -1,48 +1,52 @@
 import os
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from stable_baselines3 import PPO
-from stable_baselines3.common.callbacks import BaseCallback, EvalCallback
+from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 import parameters as p
 from envs.constructive_truss_env import ConstructiveTrussEnv
 
-def train_agent():
+def linear_schedule(initial_lr):
+    def schedule(progress_remaining):
+        return initial_lr * progress_remaining
+    return schedule
+
+
+def train_agent(seed=0):
     # Create directories
     log_path = os.path.join(p.LOG_DIR, "constructive_truss")
     model_path = os.path.join(p.MODEL_DIR, "constructive_truss")
     os.makedirs(log_path, exist_ok=True)
     os.makedirs(model_path, exist_ok=True)
     
-    # Initialize the environment
-    raw_env = ConstructiveTrussEnv(params=p)
-    env = Monitor(raw_env, log_path)
+    # Initialize parallel environments
+    env = make_vec_env(
+        ConstructiveTrussEnv,
+        n_envs=p.N_ENVS,
+        seed=seed,
+        env_kwargs={"params": p},
+        vec_env_cls=SubprocVecEnv if p.N_ENVS > 1 else DummyVecEnv,
+        monitor_dir=log_path,
+    )
     eval_env = Monitor(ConstructiveTrussEnv(params=p))
 
-    # Initialize the PPO agent
-    model = PPO(
-        env=env,
-        tensorboard_log=log_path,
-        policy=p.PPO_CONFIG_CONSTRUCTIVE["policy"],
-        learning_rate=p.PPO_CONFIG_CONSTRUCTIVE["learning_rate"],
-        n_steps=p.PPO_CONFIG_CONSTRUCTIVE["n_steps"],
-        batch_size=p.PPO_CONFIG_CONSTRUCTIVE["batch_size"],
-        n_epochs=p.PPO_CONFIG_CONSTRUCTIVE["n_epochs"],
-        gamma=p.PPO_CONFIG_CONSTRUCTIVE["gamma"],
-        gae_lambda=p.PPO_CONFIG_CONSTRUCTIVE["gae_lambda"],
-        clip_range=p.PPO_CONFIG_CONSTRUCTIVE["clip_range"],
-        ent_coef=p.PPO_CONFIG_CONSTRUCTIVE["ent_coef"],
-        verbose=p.PPO_CONFIG_CONSTRUCTIVE["verbose"],
-    )
+    # Initialize the PPO agent with the LR scheduler
+    config = dict(p.PPO_CONFIG_CONSTRUCTIVE)
+    config["learning_rate"] = linear_schedule(config["learning_rate"])
+    model = PPO(env=env, tensorboard_log=log_path, seed=seed, **config)
 
     # Set up callback
     eval_callback = EvalCallback(
         eval_env,
         best_model_save_path=model_path,
         log_path=log_path,
-        eval_freq=p.EVAL_FREQ,
-        n_eval_episodes=1,
+        eval_freq=max(p.EVAL_FREQ // p.N_ENVS, 1),
+        n_eval_episodes=1,      
         deterministic=True,
         render=False,
     )
@@ -54,10 +58,11 @@ def train_agent():
     # Save the final model
     final_model_path = os.path.join(model_path, "final_model")
     model.save(final_model_path)
-    print(f"Training complete. Final model saved to: {final_model_path}")
+    env.close()
 
-    # Evaluate the trained agent
-    evaluate_agent(model, raw_env)
+    # evaluate the best model
+    best = PPO.load(os.path.join(model_path, "best_model.zip"))
+    return evaluate_agent(best, ConstructiveTrussEnv(params=p))
 
 def evaluate_agent(model, env):
     print("Evaluating the trained agent")
@@ -104,7 +109,7 @@ def evaluate_agent(model, env):
     ax.legend()
 
     plt.show()
-    
+
 if __name__ == "__main__":
     import sys
 
