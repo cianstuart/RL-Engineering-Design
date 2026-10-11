@@ -15,18 +15,20 @@ STEP_SIZE = 0.025
 MAX_STEPS = 150
 
 # RL parameters
-TOTAL_TIMESTEPS = 150_000
+TOTAL_TIMESTEPS = 500_000
 LOG_DIR = "./data/logs/"
 MODEL_DIR = "./data/models/"
 EVAL_FREQ = 5_000
+N_ENVS = 8
+SEEDS = [0,1,2]
 
 PPO_CONFIG_PARAMETRIC = {
     "policy": "MlpPolicy",
     "learning_rate": 3e-4,
-    "n_steps": 2048,
-    "batch_size": 64,
-    "n_epochs": 10,
-    "gamma": 0.99,
+    "n_steps": 256,          
+    "batch_size": 64,        
+    "n_epochs": 10,  
+    "gamma": 0.99,         
     "gae_lambda": 0.95,
     "clip_range": 0.2,
     "ent_coef": 0.05,
@@ -35,13 +37,15 @@ PPO_CONFIG_PARAMETRIC = {
 
 PPO_CONFIG_CONSTRUCTIVE = {
     "policy": "MlpPolicy",
-    "learning_rate": 3e-4,
-    "n_steps": 2048,
-    "batch_size": 64,
-    "n_epochs": 10,
-    "gamma": 0.99,
+    "learning_rate": 3e-4,    
+    "n_steps": 256,          
+    "batch_size": 256,        
+    "n_epochs": 5,            
+    "gamma": 1.0,             
     "gae_lambda": 0.95,
     "clip_range": 0.2,
     "ent_coef": 0.005,
+    "target_kl": 0.03,        
+    "policy_kwargs": dict(log_std_init=-0.7, net_arch=[128, 128]),  
     "verbose": 1,
 }
