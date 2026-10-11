@@ -18,6 +18,7 @@ def train_agent():
     # Initialize the environment
     raw_env = ParametricTrussEnv(params=p)
     env = Monitor(raw_env, log_path)
+    eval_env = Monitor(ParametricTrussEnv(params=p))
 
     # Initialize the PPO agent
     model = PPO(
@@ -37,7 +38,7 @@ def train_agent():
 
     # Set up callback
     eval_callback = EvalCallback(
-        env,
+        eval_env,
         best_model_save_path=model_path,
         log_path=log_path,
         eval_freq=p.EVAL_FREQ,
